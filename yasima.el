@@ -2,6 +2,13 @@
 ;;; dagezi@gmail.com 2011-03-25 (Fri)
 ;;; Do as you like.
 
+;;; patched only for XEmacs 21.4 (patch 22) on Ubuntu or Mac
+;;; mamewo@dk9.so-net.ne.jp 2011-03-25
+
+; usage; write following code in init.el
+; (require 'yasima)
+; (yasima-mode t)
+
 (require 'url)
 
 (defconst yasima-interval (* 12 60))
@@ -9,8 +16,9 @@
 
 (defvar yasima-timer nil)
 (defvar yasima-string nil "")
+(defvar yasima-buffer " *yasima*")
   
-(defun yasima-update (status)
+(defun yasima-update ()
   (let (usage capacity)
     (goto-char (point-min))
     (or (and (re-search-forward "\"usage\":\\s +\\([0-9]+\\)" nil t)
@@ -25,13 +33,17 @@
   (sit-for 0))
 
 (defun yasima-event-handler ()
-  (url-retrieve yasima-tepco-usage-api-url #'yasima-update))
+  (let ((url-working-buffer yasima-buffer))
+    (save-excursion
+      (url-retrieve yasima-tepco-usage-api-url)
+      (set-buffer yasima-buffer)
+      (yasima-update))))
 
 ;;;###autoload
 (define-minor-mode yasima-mode
   "Show power usage of Tokyo Denryoku in modeline"
   :global t
-  (and yasima-timer (cancel-timer yasima-timer))
+  (and yasima-timer (delete-itimer yasima-timer))
   (setq yasima-timer nil)
   (setq yasima-string "")
   (or global-mode-string (setq global-mode-string '("")))
@@ -41,6 +53,6 @@
 	    (setq global-mode-string
 		  (append global-mode-string '(yasima-string))))
 	(setq yasima-timer
-	      (run-at-time nil yasima-interval #'yasima-event-handler)))))
+	      (run-with-timer 0.001 yasima-interval 'yasima-event-handler)))))
 
-	
+(provide 'yasima)
