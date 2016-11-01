@@ -6,4 +6,4 @@ https://github.com/dagezi/yasima.el
 
 ----
 Takashi Masuyama < mamewotoko@gmail.com >  
-http://www002.upp.so-net.ne.jp/mamewo/
+http://mamewo.ddo.jp/
